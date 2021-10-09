@@ -51,9 +51,8 @@ def test_trip():
     #line_follower(move_degrees=300, speed=20)
     #line_follower(move_degrees=800, speed=40)
     #line_follower(move_degrees=790, speed=30)
-    gyro_turn(input_angle = 120, relative = False)
-    #grind(left_speed=-30, right_speed = -30, run_seconds=2)
-    #rot_motion()
+    #gyro_turn(input_angle = 120, relative = False)
+    #grind(left_speed=-30, right_speed = -30, run_seconds=20
     #make_mark()
 
 def the_trip_with_the_crates():
@@ -304,6 +303,6 @@ def vrooom():
 
         last_color = current_color
 
-#vrooom()
-test_trip()
+vrooom()
+
 raise SystemExit("END OF PROGRAM")

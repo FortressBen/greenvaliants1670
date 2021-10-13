@@ -1,9 +1,3 @@
-from spike import PrimeHub, LightMatrix, Button, StatusLight,MotionSensor, Speaker, ColorSensor, DistanceSensor, Motor, MotorPair
-from spike.control import wait_for_seconds, wait_until, Timer
-import hub as rawhub
-import time
-import math
-
 hub = PrimeHub()
 
 motor_left = Motor('B')
@@ -22,10 +16,19 @@ motor_front_left.set_stop_action('brake')
 hub.motion_sensor.reset_yaw_angle()
 _select_trip = 0
 
+
+class TurnType:
+    LEFT =1
+    RIGHT =2
+    if turn_type == TurnType.LEFT:
+        print ("left")
+    elif turn_type == Turntype.RIGHT:
+print("turnType=",TurnType.LEFT)
+
 ##############################################################
 # Tunable Constants
-GYRO_TURN_FAST_SPEED = 45
-GYRO_TURN_SLOW_SPEED = 20
+GYRO_TURN_FAST_SPEED = 20
+GYRO_TURN_SLOW_SPEED = 8
 BLACK_MIDDLE = 40
 BLACK_EDGE = 50
 ##############################################################
@@ -51,7 +54,7 @@ def test_trip():
     #line_follower(move_degrees=300, speed=20)
     #line_follower(move_degrees=800, speed=40)
     #line_follower(move_degrees=790, speed=30)
-    #gyro_turn(input_angle = 120, relative = False)
+    gyro_turn(input_angle = 90, relative = False, left_or_right = '0')
     #grind(left_speed=-30, right_speed = -30, run_seconds=20
     #make_mark()
 
@@ -105,8 +108,9 @@ def make_mark():
     motor_front_left.run_for_degrees(80, speed=80)
     motor_front_left.run_for_degrees(-80, speed=80)
 
-def gyro_turn(input_angle = 90, relative = False, timeout = 6):
-    SLOW_DOWN_ANGLE_BUFFER = 30
+def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = '0'):
+    # '0' = both, '1' = left, '2' = right
+    SLOW_DOWN_ANGLE_BUFFER = 50
     STOP_AT_TARGET_TOLERANCE = 1
     def map_gyro_angle(x):
         modulus_x = x % 360
@@ -125,17 +129,24 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6):
     sanitized_target_angle = map_gyro_angle(desired_angle)
 
     def turn_at_speed_until_tolerence(speed, tolerance_degrees):
-
+        print("turning, speed = ",speed)
         def at_desired_angle():
             abs_value_of_difference = abs(hub.motion_sensor.get_yaw_angle() - sanitized_target_angle)
             if abs_value_of_difference <= tolerance_degrees:
+                #print ("returning, at angle=",hub.motion_sensor.get_yaw_angle())
                 return True
 
         sign = compute_sign_for_move(desired_angle)
+        #if left_or_right == '0':
         motor_pair.run_at_speed(sign*speed,sign*speed)
+        #elif left_or_right == '1':
+            #motor_pair.run_at_speed(sign*0,sign*speed)
+        #elif left_or_right == '2':
+            #motor_pair.run_at_speed(sign*speed,sign*0)
         wait_until(at_desired_angle)
-    
+
     turn_at_speed_until_tolerence(GYRO_TURN_FAST_SPEED,SLOW_DOWN_ANGLE_BUFFER)
+    print("Done with fast part")
     turn_at_speed_until_tolerence(GYRO_TURN_SLOW_SPEED,STOP_AT_TARGET_TOLERANCE)
     motor_pair.brake()
     print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
@@ -303,6 +314,7 @@ def vrooom():
 
         last_color = current_color
 
-vrooom()
-
+#vrooom()
+test_trip()
+print(hub.motion_sensor.get_yaw_angle())
 raise SystemExit("END OF PROGRAM")

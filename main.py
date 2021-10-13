@@ -24,8 +24,8 @@ _select_trip = 0
 
 ##############################################################
 # Tunable Constants
-GYRO_TURN_FAST_SPEED = 45
-GYRO_TURN_SLOW_SPEED = 20
+GYRO_TURN_FAST_SPEED = 25
+GYRO_TURN_SLOW_SPEED = 10
 BLACK_MIDDLE = 40
 BLACK_EDGE = 50
 ##############################################################
@@ -37,26 +37,37 @@ BLACK_EDGE = 50
 # acquire_line(speed = 20)
 # rot_motion()
 # line_follower(move_degrees = 1000, speed = 20)
-# gyro_turn(input_angle = 90, relative = False)
+# gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = OneWheelTurn.BOTH)
 # grind(left_speed = 20, right_speed = 20, run_seconds=3)
 #vrooom()
 ###############################################################
+
+class OneWheelTurn:
+    BOTH = 0
+    LEFT = 1
+    RIGHT = 2
+
+def motor_front_move():
+    motor_front_left.set_degrees_counted(0)
+    motor_front_right.set_degrees_counted(0)
+    motor_front_left.run_for_degrees(-80, speed=100)
+    motor_front_right.run_for_degrees(4500, speed=100)
+    motor_front_right.run_for_degrees(-4500, speed=100)
 
 def tuning():
     grind()
 
 def test_trip():
-    #two_wheel_move(left_degrees=-400, right_degrees=-100, speed = 40)
-    #acquire_line(speed=20)
-    #line_follower(move_degrees=300, speed=20)
-    #line_follower(move_degrees=800, speed=40)
-    #line_follower(move_degrees=790, speed=30)
-    #gyro_turn(input_angle = 120, relative = False)
-    #grind(left_speed=-30, right_speed = -30, run_seconds=20
-    #make_mark()
+    gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = OneWheelTurn.RIGHT)
 
 def the_trip_with_the_crates():
-    gyro_turn(20, relative = False)
+    two_wheel_move(left_degrees = 362, right_degrees = 272, speed=25)
+    acquire_line(speed = 20)
+    line_follower(move_degrees = 600, speed = 20, gain = 0.6)
+    line_follower(move_degrees = 750, speed = 40,  gain = 0.2)
+    straight(degrees_to_move = 473, speed = 25)
+    gyro_turn_for_trip_1(input_angle = 170, relative = False)
+    rot_motion()
 
 def the_trip_with_the_chest():
     gyro_turn(40, relative= False)
@@ -105,7 +116,7 @@ def make_mark():
     motor_front_left.run_for_degrees(80, speed=80)
     motor_front_left.run_for_degrees(-80, speed=80)
 
-def gyro_turn(input_angle = 90, relative = False, timeout = 6):
+def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = OneWheelTurn.BOTH):
     SLOW_DOWN_ANGLE_BUFFER = 30
     STOP_AT_TARGET_TOLERANCE = 1
     def map_gyro_angle(x):
@@ -132,9 +143,14 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6):
                 return True
 
         sign = compute_sign_for_move(desired_angle)
-        motor_pair.run_at_speed(sign*speed,sign*speed)
+        if left_or_right == 0:
+            motor_pair.run_at_speed(sign*speed,sign*speed)
+        elif left_or_right == 1:
+            motor_pair.run_at_speed(0,sign*speed)
+        else:
+            motor_pair.run_at_speed(sign*speed,0)
         wait_until(at_desired_angle)
-    
+
     turn_at_speed_until_tolerence(GYRO_TURN_FAST_SPEED,SLOW_DOWN_ANGLE_BUFFER)
     turn_at_speed_until_tolerence(GYRO_TURN_SLOW_SPEED,STOP_AT_TARGET_TOLERANCE)
     motor_pair.brake()
@@ -214,8 +230,21 @@ def acquire_line(speed = 20):
     hub.speaker.beep(90, 0.5)
     print("Acquire line Complete")
 
-def line_follower(move_degrees = 1000, speed = 20):
-    KO = 0.2
+#def acquire_line(turn_speed = 20):
+    #def color_reflected():
+        #gyro_turn(input_angle = -0.5, speed = turn_speed, timeout=6)
+        #if color.get_reflected_light() < BLACK_MIDDLE:
+            #current_color = color.get_reflected_light()
+            #return True
+        #else:
+            #return False
+    #wait_until(color_reflected())
+    #motor_pair.hold()
+    #hub.speaker.beep(90, 0.5)
+    #print("Acquire line complete")
+    
+def line_follower(move_degrees = 1000, speed = 20, gain = 0.2):
+    KO = gain
     prop_gain_t = KO + (0.05/40) * (speed - 20)
     prop_gain = max(prop_gain_t, KO)
     inter_gain = 0
@@ -303,6 +332,9 @@ def vrooom():
 
         last_color = current_color
 
-vrooom()
-
+#vrooom()
+#the_trip_with_the_crates()
+#rot_motion(print_seconds=3)
+#motor_front_move()
+test_trip()
 raise SystemExit("END OF PROGRAM")

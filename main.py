@@ -27,8 +27,8 @@ MAX_SPEED = 100
 # Tunable Constants
 GYRO_TURN_FAST_SPEED = 20
 GYRO_TURN_SLOW_SPEED = 8
-BLACK_MIDDLE = 40
-BLACK_EDGE = 50
+BLACK_MIDDLE = 25
+BLACK_EDGE = 45
 SLOW_DOWN_ANGLE_BUFFER = 30
 ##############################################################
 
@@ -37,7 +37,7 @@ SLOW_DOWN_ANGLE_BUFFER = 30
 # straight(degrees_to_move=500, speed=20)
 # two_wheel_move(left_degrees=652, right_degrees=398, speed=20)
 # acquire_line(speed=20)
-# rot_motion()
+# rot_motion(print_seconds=3)
 # line_follower(move_degrees=1000, speed=20)
 # gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 # grind(left_speed=20, right_speed=20, run_seconds=3)
@@ -60,8 +60,10 @@ def tuning():
     grind()
 
 def test_trip():
-    two_wheel_move(left_degrees=200, right_degrees=250, speed=20)
-    grind(left_speed=30, right_speed=30, run_seconds=3)
+    grind(left_speed=-30, right_speed=-30, run_seconds=3)
+    two_wheel_move(left_degrees=404, right_degrees=327, speed=20)
+    acquire_line(speed=20)
+    line_follower(move_degrees=200, speed=25)
     gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 
 def the_trip_with_the_crates():
@@ -233,19 +235,6 @@ def acquire_line(speed=20):
     hub.speaker.beep(90, 0.5)
     print("Acquire line Complete")
 
-#def acquire_line(turn_speed=20):
-    #def color_reflected():
-        #gyro_turn(input_angle=-0.5, speed=turn_speed, timeout=6)
-        #if color.get_reflected_light() < BLACK_MIDDLE:
-            #current_color = color.get_reflected_light()
-            #return True
-        #else:
-            #return False
-    #wait_until(color_reflected())
-    #motor_pair.hold()
-    #hub.speaker.beep(90, 0.5)
-    #print("Acquire line complete")
-    
 def line_follower(move_degrees=1000, speed=20, gain=0.2):
     KO = gain
     prop_gain_t = KO + (0.05/40) * (speed - 20)

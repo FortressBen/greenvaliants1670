@@ -39,7 +39,7 @@ SLOW_DOWN_ANGLE_BUFFER = 30
 # acquire_line(speed=20)
 # rot_motion()
 # line_follower(move_degrees=1000, speed=20)
-# gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=OneWheelTurn.BOTH)
+# gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 # grind(left_speed=20, right_speed=20, run_seconds=3)
 #vrooom()
 ###############################################################
@@ -60,7 +60,9 @@ def tuning():
     grind()
 
 def test_trip():
-    gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=OneWheelTurn.RIGHT)
+    two_wheel_move(left_degrees=200, right_degrees=250, speed=20)
+    grind(left_speed=30, right_speed=30, run_seconds=3)
+    gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 
 def the_trip_with_the_crates():
     two_wheel_move(left_degrees=362, right_degrees=272, speed=25)
@@ -68,7 +70,7 @@ def the_trip_with_the_crates():
     line_follower(move_degrees=600, speed=20, gain=0.6)
     line_follower(move_degrees=750, speed=40, gain=0.2)
     straight(degrees_to_move=473, speed=25)
-    gyro_turn(input_angle=180, relative=False, timeout=6, left_or_right=OneWheelTurn.RIGHT)
+    gyro_turn(input_angle=180, relative=False, timeout=6, left_or_right=TurnTypef.RIGHT)
     rot_motion()
 
 def the_trip_with_the_chest():
@@ -333,9 +335,5 @@ def vrooom():
 
         last_color = current_color
 
-#vrooom()
-#the_trip_with_the_crates()
-#rot_motion(print_seconds=3)
-#motor_front_move()
-test_trip()
+vrooom()
 raise SystemExit("END OF PROGRAM")

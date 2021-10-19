@@ -1,5 +1,6 @@
 from spike import PrimeHub, LightMatrix, Button, StatusLight,MotionSensor, Speaker, ColorSensor, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
+from hub import battery
 import hub as rawhub
 import time
 import math
@@ -50,15 +51,12 @@ class TurnType:
     LEFT = 1
     RIGHT = 2
 
-def motor_front_move():
+def test_motors_up_down():
     motor_front_left.set_degrees_counted(0)
     motor_front_right.set_degrees_counted(0)
     motor_front_left.run_for_degrees(-80, speed=MAX_SPEED)
     motor_front_right.run_for_degrees(4500, speed=MAX_SPEED)
     motor_front_right.run_for_degrees(-4500, speed=MAX_SPEED)
-
-def tuning():
-    grind()
 
 def test_trip():
     grind(left_speed=-30, right_speed=-30, run_seconds=3)
@@ -68,14 +66,6 @@ def test_trip():
     gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 
 def the_trip_with_the_crates():
-    #two_wheel_move(left_degrees=362, right_degrees=272, speed=25)
-    #acquire_line(speed=20)
-    #line_follower(move_degrees=600, speed=20, gain=0.6)
-    #line_follower(move_degrees=750, speed=40, gain=0.2)
-    #straight(degrees_to_move=473, speed=25)
-    #gyro_turn(input_angle=180, relative=False, timeout=6, left_or_right=TurnType.RIGHT)
-    #gyro_turn(input_angle=10, relative=True, timeout=6, left_or_right=TurnType.LEFT)
-    #line_follower(move_degrees=600, speed=35, gain=0.6)
     grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
     two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
@@ -122,6 +112,9 @@ def sign(input_value):
 def is_within_tolerance(expected, actual, tolerance):
     if abs(abs(expected) - abs(actual)) <= tolerance:
         return True
+
+def check_battery():
+    print(battery.info())
 ###############################################################
 
 def make_mark():
@@ -137,12 +130,12 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=20):
         else:
             return False
     if left_or_right == TurnType.LEFT:
-        motor_pair.run_at_speed(0, speed)
+        motor_pair.run_at_speed(0, -speed)
     else:
         motor_pair.run_at_speed(speed, 0)
     wait_until(stop_at_edge)
     motor_pair.brake()
-        
+
 
 def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
     STOP_AT_TARGET_TOLERANCE = 1
@@ -220,9 +213,9 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
 
 def straight(degrees_to_move=500, speed=35):
     two_wheel_move(left_degrees=degrees_to_move,right_degrees=degrees_to_move, speed=speed)
-    ("Straight Complete")
 
 def rot_motion(print_seconds=3):
+    motor_pair.coast()
     rot_motion_timer = Timer()
     motor_left.set_degrees_counted(0)
     motor_right.set_degrees_counted(0)
@@ -346,5 +339,6 @@ def vrooom():
 
         last_color = current_color
 
-vrooom()
+#vrooom()
+battery_hex()
 raise SystemExit("END OF PROGRAM")

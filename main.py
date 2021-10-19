@@ -41,6 +41,7 @@ SLOW_DOWN_ANGLE_BUFFER = 30
 # line_follower(move_degrees=1000, speed=20)
 # gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 # grind(left_speed=20, right_speed=20, run_seconds=3)
+# turn_until_line(left_or_right=TurnType.RIGHT)
 #vrooom()
 ###############################################################
 
@@ -67,12 +68,18 @@ def test_trip():
     gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 
 def the_trip_with_the_crates():
-    two_wheel_move(left_degrees=362, right_degrees=272, speed=25)
-    acquire_line(speed=20)
-    line_follower(move_degrees=600, speed=20, gain=0.6)
-    line_follower(move_degrees=750, speed=40, gain=0.2)
-    straight(degrees_to_move=473, speed=25)
-    gyro_turn(input_angle=180, relative=False, timeout=6, left_or_right=TurnTypef.RIGHT)
+    #two_wheel_move(left_degrees=362, right_degrees=272, speed=25)
+    #acquire_line(speed=20)
+    #line_follower(move_degrees=600, speed=20, gain=0.6)
+    #line_follower(move_degrees=750, speed=40, gain=0.2)
+    #straight(degrees_to_move=473, speed=25)
+    #gyro_turn(input_angle=180, relative=False, timeout=6, left_or_right=TurnType.RIGHT)
+    #gyro_turn(input_angle=10, relative=True, timeout=6, left_or_right=TurnType.LEFT)
+    #line_follower(move_degrees=600, speed=35, gain=0.6)
+    grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
+    two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
+    two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
+    turn_until_line(left_or_right=TurnType.LEFT)
     rot_motion()
 
 def the_trip_with_the_chest():
@@ -121,6 +128,21 @@ def make_mark():
     motor_front_left.set_degrees_counted(0)
     motor_front_left.run_for_degrees(80, speed=80)
     motor_front_left.run_for_degrees(-80, speed=80)
+
+def turn_until_line(left_or_right=TurnType.LEFT, speed=20):
+    def stop_at_edge():
+        if color.get_reflected_light() < BLACK_MIDDLE:
+            current_color = color.get_reflected_light()
+            return True
+        else:
+            return False
+    if left_or_right == TurnType.LEFT:
+        motor_pair.run_at_speed(0, speed)
+    else:
+        motor_pair.run_at_speed(speed, 0)
+    wait_until(stop_at_edge)
+    motor_pair.brake()
+        
 
 def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
     STOP_AT_TARGET_TOLERANCE = 1
@@ -185,7 +207,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     ACCEL_MS_TO_FULL_SPEED = 600
     DECEL_MS_TO_FULL_SPEED = 1500
     motor_pair.preset(0,0)
-    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop=STOP_HOLD)
+    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop=STOP_BRAKE)
 
     def is_done():
         if is_within_tolerance(left_degrees, get_left_motor_degrees(), 3) and is_within_tolerance(right_degrees, get_right_motor_degrees(), 3):
@@ -215,7 +237,7 @@ def rot_motion(print_seconds=3):
         front_degrees_ran = motor_front_left.get_degrees_counted()
         if rot_motion_timer.now() >= print_seconds:
             print("gyro_turn(" + str(current_angle) + ", relative = True)")
-            print("two_wheel_move(speed = 20, left_degrees = " + str(-left_degrees_ran) + ", right_degrees = " + str(right_degrees_ran) + ")")
+            print("two_wheel_move(left_degrees=" + str(-left_degrees_ran) + ", right_degrees=" + str(right_degrees_ran) + ", speed=30)")
             rot_motion_timer.reset()
 
         if hub.left_button.was_pressed() or hub.right_button.was_pressed():

@@ -215,7 +215,7 @@ def straight(degrees_to_move=500, speed=35):
     two_wheel_move(left_degrees=degrees_to_move,right_degrees=degrees_to_move, speed=speed)
 
 def rot_motion(print_seconds=3):
-    motor_pair.coast()
+    motor_pair.float()
     rot_motion_timer = Timer()
     motor_left.set_degrees_counted(0)
     motor_right.set_degrees_counted(0)
@@ -339,6 +339,5 @@ def vrooom():
 
         last_color = current_color
 
-#vrooom()
-battery_hex()
+vrooom()
 raise SystemExit("END OF PROGRAM")

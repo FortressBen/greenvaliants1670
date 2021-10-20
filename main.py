@@ -28,7 +28,7 @@ MAX_SPEED = 100
 # Tunable Constants
 GYRO_TURN_FAST_SPEED = 20
 GYRO_TURN_SLOW_SPEED = 8
-BLACK_MIDDLE = 25
+BLACK_MIDDLE = 30
 BLACK_EDGE = 45
 SLOW_DOWN_ANGLE_BUFFER = 30
 ##############################################################
@@ -70,7 +70,8 @@ def the_trip_with_the_crates():
     two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
     turn_until_line(left_or_right=TurnType.LEFT)
-    rot_motion()
+    line_follower(move_degrees=1269, speed=35, gain=0.19)
+    #rot_motion()
 
 def the_trip_with_the_chest():
     gyro_turn(40, relative=False)
@@ -122,7 +123,7 @@ def make_mark():
     motor_front_left.run_for_degrees(80, speed=80)
     motor_front_left.run_for_degrees(-80, speed=80)
 
-def turn_until_line(left_or_right=TurnType.LEFT, speed=20):
+def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
     def stop_at_edge():
         if color.get_reflected_light() < BLACK_MIDDLE:
             current_color = color.get_reflected_light()
@@ -134,8 +135,9 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=20):
     else:
         motor_pair.run_at_speed(speed, 0)
     wait_until(stop_at_edge)
-    motor_pair.brake()
-
+    motor_pair.hold()
+    hub.speaker.beep(90, 0.2)
+    print("Found line")
 
 def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
     STOP_AT_TARGET_TOLERANCE = 1
@@ -200,7 +202,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     ACCEL_MS_TO_FULL_SPEED = 600
     DECEL_MS_TO_FULL_SPEED = 1500
     motor_pair.preset(0,0)
-    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop=STOP_BRAKE)
+    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop=STOP_HOLD)
 
     def is_done():
         if is_within_tolerance(left_degrees, get_left_motor_degrees(), 3) and is_within_tolerance(right_degrees, get_right_motor_degrees(), 3):
@@ -208,7 +210,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
 
     while not is_done():
         pass
-
+    print(get_left_motor_degrees(), get_right_motor_degrees())
     print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):
@@ -335,7 +337,9 @@ def vrooom():
                 increment_trip()
 
             if left_pressed:
+                print("Starting Trip")
                 run_selected_trip()
+                print("Ending Trip")
 
         last_color = current_color
 

@@ -1,12 +1,14 @@
 from spike import PrimeHub, LightMatrix, Button, StatusLight,MotionSensor, Speaker, ColorSensor, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
-from hub import battery
 import hub as rawhub
 import time
 import math
+import runtime
+import sys
+import system
 
 hub = PrimeHub()
-
+VM = None
 motor_left = Motor('B')
 motor_right = Motor('A')
 motor_front_left = Motor('C')
@@ -22,68 +24,93 @@ STOP_FLOAT = left_motor.STOP_FLOAT
 motor_front_left.set_stop_action('brake')
 hub.motion_sensor.reset_yaw_angle()
 _select_trip = 0
-MAX_SPEED = 100
 
 ##############################################################
 # Tunable Constants
-GYRO_TURN_FAST_SPEED = 20
-GYRO_TURN_SLOW_SPEED = 8
-BLACK_MIDDLE = 30
-BLACK_EDGE = 45
-SLOW_DOWN_ANGLE_BUFFER = 30
+GYRO_TURN_FAST_SPEED=45
+GYRO_TURN_SLOW_SPEED=20
+BLACK_MIDDLE=40
+BLACK_EDGE=50
+DEBUG=True
+MENU_DELAY=0.6
 ##############################################################
 
 ##############################################################
 # Available Functions
-# straight(degrees_to_move=500, speed=20)
-# two_wheel_move(left_degrees=652, right_degrees=398, speed=20)
-# acquire_line(speed=20)
-# rot_motion(print_seconds=3)
-# line_follower(move_degrees=1000, speed=20)
-# gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
-# grind(left_speed=20, right_speed=20, run_seconds=3)
-# turn_until_line(left_or_right=TurnType.RIGHT)
+# straight(degrees_to_move = 500, speed = 20)
+# two_wheel_move(left_degrees = 652, right_degrees = 398, speed = 20)
+# acquire_line(speed = 20)
+# rot_motion()
+# line_follower(move_degrees = 1000, speed = 20)
+# gyro_turn(input_angle = 90, relative = False)
+# grind(left_speed = 20, right_speed = 20, run_seconds=3)
 #vrooom()
 ###############################################################
 
-class TurnType:
-    BOTH = 0
-    LEFT = 1
-    RIGHT = 2
 
-def test_motors_up_down():
-    motor_front_left.set_degrees_counted(0)
-    motor_front_right.set_degrees_counted(0)
-    motor_front_left.run_for_degrees(-80, speed=MAX_SPEED)
-    motor_front_right.run_for_degrees(4500, speed=MAX_SPEED)
-    motor_front_right.run_for_degrees(-4500, speed=MAX_SPEED)
+class Logger(object):
+    def __init__(self):
+        self.current_row=1
+        self.current_col=1
+        self.reset()
+
+    def log_step(self,text):
+        if DEBUG:
+            print("Step '{}'".format(text))
+        hub.light_matrix.set_pixel(self.current_col, self.current_row)
+        self.increment()
+
+    def increment(self):
+        self.current_col += 1        
+        if self.current_col==5:
+            self.current_col = 1
+            self.current_row += 1
+
+    def log_success(self):
+        wait_for_ms(500)
+        hub.light_matrix.show_image('YES')
+        wait_for_ms(500)
+
+    def reset(self):
+        self.current_row=1
+        self.current_col=1
+        rawhub.display.clear()
+
+STEP_LOG = Logger()
+
+def tuning():
+    grind()
 
 def test_trip():
-    grind(left_speed=-30, right_speed=-30, run_seconds=3)
-    two_wheel_move(left_degrees=404, right_degrees=327, speed=20)
-    acquire_line(speed=20)
-    line_follower(move_degrees=200, speed=25)
-    gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
+    #two_wheel_move(left_degrees=-400, right_degrees=-100, speed = 40)
+    #acquire_line(speed=20)
+    #line_follower(move_degrees=300, speed=20)
+    #line_follower(move_degrees=800, speed=40)
+    #line_follower(move_degrees=790, speed=30)
+    gyro_turn(input_angle = 120, relative = False)
+    #grind(left_speed=-30, right_speed = -30, run_seconds=2)
+    #rot_motion()
+    #make_mark()
 
 def the_trip_with_the_crates():
-    grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
-    two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
-    two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
-    turn_until_line(left_or_right=TurnType.LEFT)
-    line_follower(move_degrees=1269, speed=35, gain=0.19)
-    #rot_motion()
+    two_wheel_move(msg="move 1", left_degrees=200, right_degrees=80, speed = 20)
+    two_wheel_move(msg="move 2",left_degrees=-200, right_degrees=-80, speed = 20)
 
 def the_trip_with_the_chest():
-    gyro_turn(40, relative=False)
+    #gyro_turn(40, relative= False)
+    for i in range(15):
+        STEP_LOG.log_step(i)
 
 def the_one_with_the_crane():
-    gyro_turn(45, relative=False)
+    gyro_turn(input_angle=-40, relative= False)
 
 def the_ending_trip():
-    gyro_turn(120, relative=False)
+    gyro_turn(input_angle=0, relative= False)
 
 ###############################################################
 # Utility Functions
+
+
 def get_left_motor_degrees():
     return motor_left.get_degrees_counted() * -1
 
@@ -113,9 +140,6 @@ def sign(input_value):
 def is_within_tolerance(expected, actual, tolerance):
     if abs(abs(expected) - abs(actual)) <= tolerance:
         return True
-
-def check_battery():
-    print(battery.info())
 ###############################################################
 
 def make_mark():
@@ -123,23 +147,8 @@ def make_mark():
     motor_front_left.run_for_degrees(80, speed=80)
     motor_front_left.run_for_degrees(-80, speed=80)
 
-def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
-    def stop_at_edge():
-        if color.get_reflected_light() < BLACK_MIDDLE:
-            current_color = color.get_reflected_light()
-            return True
-        else:
-            return False
-    if left_or_right == TurnType.LEFT:
-        motor_pair.run_at_speed(0, -speed)
-    else:
-        motor_pair.run_at_speed(speed, 0)
-    wait_until(stop_at_edge)
-    motor_pair.hold()
-    hub.speaker.beep(90, 0.2)
-    print("Found line")
-
-def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
+def gyro_turn(msg="",input_angle=90, relative=False, timeout = 6):
+    SLOW_DOWN_ANGLE_BUFFER = 30
     STOP_AT_TARGET_TOLERANCE = 1
     def map_gyro_angle(x):
         modulus_x = x % 360
@@ -157,7 +166,7 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
 
     sanitized_target_angle = map_gyro_angle(desired_angle)
 
-    def turn_at_speed_until_tolerance(speed, tolerance_degrees):
+    def turn_at_speed_until_tolerence(speed, tolerance_degrees):
 
         def at_desired_angle():
             abs_value_of_difference = abs(hub.motion_sensor.get_yaw_angle() - sanitized_target_angle)
@@ -165,20 +174,16 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
                 return True
 
         sign = compute_sign_for_move(desired_angle)
-        if left_or_right == TurnType.BOTH:
-            motor_pair.run_at_speed(sign*speed, sign*speed)
-        elif left_or_right == TurnType.LEFT:
-            motor_pair.run_at_speed(0, sign*speed)
-        else:
-            motor_pair.run_at_speed(sign*speed, 0)
+        motor_pair.run_at_speed(sign*speed,sign*speed)
         wait_until(at_desired_angle)
 
-    turn_at_speed_until_tolerance(GYRO_TURN_FAST_SPEED, SLOW_DOWN_ANGLE_BUFFER)
-    turn_at_speed_until_tolerance(GYRO_TURN_SLOW_SPEED, STOP_AT_TARGET_TOLERANCE)
+    turn_at_speed_until_tolerence(GYRO_TURN_FAST_SPEED,SLOW_DOWN_ANGLE_BUFFER)
+    turn_at_speed_until_tolerence(GYRO_TURN_SLOW_SPEED,STOP_AT_TARGET_TOLERANCE)
     motor_pair.brake()
-    print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
+    final_angle = hub.motion_sensor.get_yaw_angle()
+    STEP_LOG.log_step("Gyro Turn:"+ msg + str(final_angle))
 
-def grind(left_speed=40, right_speed=20, run_seconds=3):
+def grind(msg="",left_speed=40, right_speed=20, run_seconds=3):
     grind_timer = Timer()
 
     def done_grinding():
@@ -195,29 +200,27 @@ def grind(left_speed=40, right_speed=20, run_seconds=3):
     wait_until(done_grinding)
     motor_right.stop()
     motor_left.stop()
-    print("Grind Complete")
+    STEP_LOG.log_step("Grind:"+msg)
 
-def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
+def two_wheel_move(msg="", left_degrees=100, right_degrees=100, speed=30):
     MAX_POWER = 100
     ACCEL_MS_TO_FULL_SPEED = 600
     DECEL_MS_TO_FULL_SPEED = 1500
     motor_pair.preset(0,0)
-    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop=STOP_HOLD)
+    motor_pair.run_to_position(right_degrees,-left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop = STOP_HOLD)
 
     def is_done():
-        if is_within_tolerance(left_degrees, get_left_motor_degrees(), 3) and is_within_tolerance(right_degrees, get_right_motor_degrees(), 3):
+        if is_within_tolerance(left_degrees, get_left_motor_degrees(),3) and is_within_tolerance(right_degrees, get_right_motor_degrees(),3):
             return True
 
     while not is_done():
         pass
-    print(get_left_motor_degrees(), get_right_motor_degrees())
-    print("Two Wheel Move Complete")
+    STEP_LOG.log_step("Two Wheel Turn:"+ msg + str((get_left_motor_degrees(),get_right_motor_degrees())))
 
 def straight(degrees_to_move=500, speed=35):
-    two_wheel_move(left_degrees=degrees_to_move,right_degrees=degrees_to_move, speed=speed)
+    two_wheel_move(left_degrees = degrees_to_move, right_degrees = degrees_to_move, speed = speed)
 
 def rot_motion(print_seconds=3):
-    motor_pair.float()
     rot_motion_timer = Timer()
     motor_left.set_degrees_counted(0)
     motor_right.set_degrees_counted(0)
@@ -232,13 +235,13 @@ def rot_motion(print_seconds=3):
         front_degrees_ran = motor_front_left.get_degrees_counted()
         if rot_motion_timer.now() >= print_seconds:
             print("gyro_turn(" + str(current_angle) + ", relative = True)")
-            print("two_wheel_move(left_degrees=" + str(-left_degrees_ran) + ", right_degrees=" + str(right_degrees_ran) + ", speed=30)")
+            print("two_wheel_move(speed = 20, left_degrees = " + str(-left_degrees_ran) + ", right_degrees = " + str(right_degrees_ran) + ")")
             rot_motion_timer.reset()
 
         if hub.left_button.was_pressed() or hub.right_button.was_pressed():
             break
 
-def acquire_line(speed=20):
+def acquire_line(msg="",speed=20):
     motor_pair.run_at_speed(speed,-speed)
     def color_reflected():
         if color.get_reflected_light() < BLACK_MIDDLE:
@@ -250,10 +253,10 @@ def acquire_line(speed=20):
     wait_until(color_reflected)
     motor_pair.hold()
     hub.speaker.beep(90, 0.5)
-    print("Acquire line Complete")
+    STEP_LOG.log_step("Aquire Line:"+ msg)
 
-def line_follower(move_degrees=1000, speed=20, gain=0.2):
-    KO = gain
+def line_follower(msg="",move_degrees=1000, speed=20):
+    KO = 0.2
     prop_gain_t = KO + (0.05/40) * (speed - 20)
     prop_gain = max(prop_gain_t, KO)
     inter_gain = 0
@@ -277,9 +280,16 @@ def line_follower(move_degrees=1000, speed=20, gain=0.2):
         motor_left.start_at_power(left_motor_input)
     motor_right.stop()
     motor_left.stop()
-    print("Line follower Complete")
+    STEP_LOG.log_step("Line Follower:"+ msg)
+
+def consume_pending_button_presses():
+    hub.left_button.was_pressed()
+    hub.right_button.was_pressed()
 
 def vrooom():
+
+    consume_pending_button_presses()
+
     map_colors = {
         'blue': 1,
         'yellow': 2,
@@ -308,12 +318,14 @@ def vrooom():
         global _select_trip
         _select_trip = new_trip
 
-        if _select_trip > 4:
+        if _select_trip > len(display_map):
             _select_trip = 1
         hub.light_matrix.show_image(display_map[_select_trip])
 
     def run_selected_trip():
-        map_trips[_select_trip]()
+        STEP_LOG.reset()
+        map_trips[_select_trip]()        
+        STEP_LOG.log_success()
 
     select_trip(1)
 
@@ -321,27 +333,51 @@ def vrooom():
     last_color = None
 
     while True:
-        wait_for_seconds(0.5)
+        wait_for_seconds(MENU_DELAY)
         current_color = color.get_color()
 
         if current_color in map_colors:
             color_to_run = map_colors[current_color]
             select_trip(color_to_run)
 
-        left_pressed = hub.left_button.was_pressed()
-        right_pressed = hub.right_button.was_pressed()
-        if left_pressed and right_pressed:
-            test_trip()
+        if rawhub.button.right.presses() > 1:
+            print("Aborting...")
+            VM.stop()
         else:
-            if right_pressed:
-                increment_trip()
+            left_pressed = hub.left_button.was_pressed()
+            right_pressed = hub.right_button.was_pressed()
+            if left_pressed and right_pressed:
+                test_trip()
+            else:
+                if right_pressed:
+                    increment_trip()
 
-            if left_pressed:
-                print("Starting Trip")
-                run_selected_trip()
-                print("Ending Trip")
+                if left_pressed:
+                    run_selected_trip()
+                    increment_trip()
 
         last_color = current_color
 
-vrooom()
-raise SystemExit("END OF PROGRAM")
+
+def main(vm, stack):
+    global VM
+    VM = vm
+    print("running vroom")
+    try:
+        vrooom()
+    except BaseException as err:
+        sys.print_exception(err)
+    print ("^^^^^^^^Stopping due to Exception!^^^^^^^")
+    vm.stop()
+
+def setup(rpc, system, stop):
+    print("Setting Up")
+    vm = runtime.VirtualMachine(rpc, system, stop, "1670_code")
+    vm.register_on_start("main_on_start", main)
+    return vm
+
+class RPC:
+    def emit(self, op, id):
+        pass
+
+setup(RPC(), system.system, sys.exit).start()

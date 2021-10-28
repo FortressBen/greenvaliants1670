@@ -71,7 +71,9 @@ def the_trip_with_the_crates():
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
     turn_until_line(left_or_right=TurnType.LEFT)
     line_follower(move_degrees=1269, speed=35, gain=0.19)
-    #rot_motion()
+    gyro_turn(input_angle=125, relative=True, timeout=6, left_or_right=TurnType.BOTH)
+
+    rot_motion()
 
 def the_trip_with_the_chest():
     gyro_turn(40, relative=False)

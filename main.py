@@ -330,14 +330,18 @@ def vrooom():
             color_to_run = map_colors[current_color]
             select_trip(color_to_run)
 
-        left_pressed = hub.left_button.was_pressed()
-        right_pressed = hub.right_button.was_pressed()
+        if rawhub.button.right.presses() > 1:
+            print("Aborting...")
+            
+        else:
+            left_pressed = hub.left_button.was_pressed()
+            right_pressed = hub.right_button.was_pressed()
         if left_pressed and right_pressed:
             test_trip()
         else:
             if right_pressed:
                 increment_trip()
-
+                raise SystemExit("Button Pressed Twice")
             if left_pressed:
                 print("Starting Trip")
                 run_selected_trip()

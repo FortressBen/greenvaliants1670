@@ -45,6 +45,9 @@ class TurnType:
     LEFT = 1
     RIGHT = 2
 
+def tuning():
+    straight(degrees_to_move=500, speed=35)
+
 def test_motors_up_down():
     motor_front_left.set_degrees_counted(0)
     motor_front_right.set_degrees_counted(0)
@@ -68,6 +71,8 @@ def the_trip_with_the_crates():
     gyro_turn(input_angle=125, relative=True, left_or_right=TurnType.LEFT)
     two_wheel_move(left_degrees=-533, right_degrees=-544, speed=30)
     grind(left_speed=-35, right_speed=-35, run_seconds=1)
+    two_wheel_move(left_degrees=356, right_degrees=370, speed=30)
+    two_wheel_move(left_degrees=370, right_degrees=356, speed=30)
 
 def the_trip_with_the_chest():
     gyro_turn(40, relative=False)
@@ -190,7 +195,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     ACCEL_MS_TO_FULL_SPEED = 600
     DECEL_MS_TO_FULL_SPEED = 1500
     motor_pair.preset(0,0)
-    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, stop=STOP_HOLD)
+    motor_pair.run_to_position(right_degrees, -left_degrees, speed, MAX_POWER, ACCEL_MS_TO_FULL_SPEED, DECEL_MS_TO_FULL_SPEED, STOP_HOLD)
     def is_done():
         if is_within_tolerance(left_degrees, get_left_motor_degrees(), 3) and is_within_tolerance(right_degrees, get_right_motor_degrees(), 3):
             return True
@@ -200,7 +205,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):
-    run_for_degrees(degrees: degrees_to_move, speed_0: speed, speed_1: speed, max_power: speed, acceleration: 600, deceleration: 1500, stop: STOP_HOLD)
+    motor_pair.run_for_degrees(degrees_to_move, speed, -speed, 100, 600, 1500)
 
 def rot_motion(print_seconds=3):
     motor_pair.float()
@@ -285,7 +290,7 @@ def vrooom():
 
     def increment_trip():
         select_trip(_select_trip + 1)
-    
+
     def select_trip(new_trip):
         global _select_trip
         _select_trip = new_trip

@@ -200,7 +200,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):
-    two_wheel_move(left_degrees=degrees_to_move,right_degrees=degrees_to_move, speed=speed)
+    run_for_degrees(degrees: degrees_to_move, speed_0: speed, speed_1: speed, max_power: speed, acceleration: 600, deceleration: 1500, stop: STOP_HOLD)
 
 def rot_motion(print_seconds=3):
     motor_pair.float()

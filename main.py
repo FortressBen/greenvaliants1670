@@ -266,7 +266,14 @@ def line_follower(move_degrees=1000, speed=20, gain=0.2):
     motor_left.stop()
     print("Line follower Complete")
 
+def delete_extra_presses():
+    hub.left_button.was_pressed()
+    hub.right_button.was_pressed()
+
 def vrooom():
+
+    delete_extra_presses()
+
     map_colors = {
         'blue': 1,
         'yellow': 2,

@@ -19,7 +19,7 @@ STOP_FLOAT = left_motor.STOP_FLOAT
 motor_front_left.set_stop_action('brake')
 hub.motion_sensor.reset_yaw_angle()
 _select_trip = 0
-MAX_SPEED = 100
+MAX_SPEED = 75
 ##############################################################
 # Tunable Constants
 GYRO_TURN_FAST_SPEED = 20
@@ -38,7 +38,7 @@ SLOW_DOWN_ANGLE_BUFFER = 30
 # gyro_turn(input_angle=90, relative=False, timeout=6, left_or_right=TurnType.BOTH)
 # grind(left_speed=20, right_speed=20, run_seconds=3)
 # turn_until_line(left_or_right=TurnType.RIGHT)
-#vrooom()
+# vrooom()
 ###############################################################
 class TurnType:
     BOTH = 0
@@ -46,7 +46,7 @@ class TurnType:
     RIGHT = 2
 
 def tuning():
-    straight(degrees_to_move=500, speed=35)
+    grind(left_speed=-40, right_speed=-40, run_seconds=3)
 
 def test_motors_up_down():
     motor_front_left.set_degrees_counted(0)
@@ -68,11 +68,12 @@ def the_trip_with_the_crates():
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
     turn_until_line(left_or_right=TurnType.LEFT)
     line_follower(move_degrees=1269, speed=35, gain=0.19)
-    gyro_turn(input_angle=125, relative=True, left_or_right=TurnType.LEFT)
-    two_wheel_move(left_degrees=-533, right_degrees=-544, speed=30)
-    grind(left_speed=-35, right_speed=-35, run_seconds=1)
-    two_wheel_move(left_degrees=356, right_degrees=370, speed=30)
-    two_wheel_move(left_degrees=370, right_degrees=356, speed=30)
+    gyro_turn(input_angle=130, relative=True, left_or_right=TurnType.LEFT)
+    grind(left_speed=-40, right_speed=-40, run_seconds=3)
+    two_wheel_move(left_degrees=800, right_degrees=800, speed=30)
+    motor_front_right.run_for_degrees(3000, speed=MAX_SPEED)
+    motor_front_right.run_for_degrees(-3000, speed=MAX_SPEED)
+    #two_wheel_move(left_degrees=-669, right_degrees=-669, speed=40)
 
 def the_trip_with_the_chest():
     gyro_turn(40, relative=False)
@@ -81,7 +82,7 @@ def the_one_with_the_crane():
     gyro_turn(45, relative=False)
 
 def the_ending_trip():
-    gyro_turn(120, relative=False)
+    gyro_turn(125, relative=True, left_or_right=TurnType.LEFT)
 ###############################################################
 # Utility Functions
 def get_left_motor_degrees():
@@ -180,8 +181,7 @@ def grind(left_speed=40, right_speed=20, run_seconds=3):
     def done_grinding():
         if grind_timer.now() >= run_seconds:
             return True
-        if motor_left.was_stalled() and motor_right.was_stalled():
-            return True
+        print(grind_timer.now())
         return False
     motor_right.start_at_power(right_speed)
     motor_left.start_at_power(-left_speed)

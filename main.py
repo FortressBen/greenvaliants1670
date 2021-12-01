@@ -76,7 +76,13 @@ def the_trip_with_the_crates():
     #two_wheel_move(left_degrees=-669, right_degrees=-669, speed=40)
 
 def the_trip_with_the_chest():
-    gyro_turn(40, relative=False)
+    grind(left_speed=-40, right_speed=-40, run_seconds=0.3)
+    acquire_line(speed=25)
+    line_follower(move_degrees=469, speed=18, gain=0.3)
+    motor_front_left.run_for_degrees(-360, speed=40)
+    line_follower(move_degrees=123, speed=18, gain=0.19)
+    motor_front_right.run_for_degrees(360, speed=MAX_SPEED)
+    rot_motion()
 
 def the_one_with_the_crane():
     gyro_turn(45, relative=False)

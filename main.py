@@ -67,18 +67,24 @@ def the_trip_with_the_crates():
     two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
     turn_until_line(left_or_right=TurnType.LEFT)
-    line_follower(move_degrees=1269, speed=35, gain=0.19)
-    gyro_turn(input_angle=135, relative=True, left_or_right=TurnType.LEFT)
+    line_follower(move_degrees=660, speed=35, gain=0.19)
+    hub.speaker.beep(100, 0.125)
+    line_follower(move_degrees=180, speed=20, gain=0.25)
+    hub.speaker.beep(100, 0.125)
+    line_follower(move_degrees=429, speed=35, gain=0.19)
+    gyro_turn(input_angle=130, relative=True, left_or_right=TurnType.LEFT)
     grind(left_speed=-40, right_speed=-40, run_seconds=3)
     two_wheel_move(left_degrees=790, right_degrees=790, speed=30)
+    grind(left_speed=20,right_speed=20,run_seconds=0.25)
     motor_front_right.run_for_degrees(3500, speed=MAX_SPEED)
     motor_front_left.run_for_degrees(-300, speed=MAX_SPEED)
     motor_front_left.run_for_degrees(300, speed=50)
     motor_front_right.run_for_degrees(-3500, speed=MAX_SPEED)
     grind(left_speed=-25,right_speed=-25, run_seconds=0.5)
     acquire_line(speed=-20)
-    gyro_turn(input_angle=240, relative=False, left_or_right=TurnType.LEFT)
-    two_wheel_move(left_degrees=1154, right_degrees=1116, speed=35)
+    gyro_turn(input_angle=250, relative=False, left_or_right=TurnType.LEFT)
+    two_wheel_move(left_degrees=884, right_degrees=836, speed=35)
+    gyro_turn(input_angle=-12, relative=True, left_or_right=TurnType.RIGHT)
     rot_motion()
 
 def the_trip_with_the_chest():
@@ -90,7 +96,7 @@ def the_trip_with_the_chest():
     motor_front_right.run_for_degrees(360, speed=MAX_SPEED)
     rot_motion()
 
-def the_one_with_the_crane():
+def the_trip_with_the_crane():
     gyro_turn(45, relative=False)
 
 def the_ending_trip():
@@ -149,7 +155,7 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
     wait_until(stop_at_edge)
     motor_pair.hold()
     hub.speaker.beep(90, 0.2)
-    print("Found line")
+    #print("Found line")
 
 def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
     STOP_AT_TARGET_TOLERANCE = 1
@@ -186,7 +192,7 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
     turn_at_speed_until_tolerance(GYRO_TURN_FAST_SPEED, SLOW_DOWN_ANGLE_BUFFER)
     turn_at_speed_until_tolerance(GYRO_TURN_SLOW_SPEED, STOP_AT_TARGET_TOLERANCE)
     motor_pair.brake()
-    print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
+    #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
 
 def grind(left_speed=40, right_speed=20, run_seconds=3):
     grind_timer = Timer()
@@ -200,7 +206,7 @@ def grind(left_speed=40, right_speed=20, run_seconds=3):
     wait_until(done_grinding)
     motor_right.stop()
     motor_left.stop()
-    print("Grind Complete")
+    #print("Grind Complete")
 
 def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     MAX_POWER = 100
@@ -214,7 +220,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     while not is_done():
         pass
     print(get_left_motor_degrees(), get_right_motor_degrees())
-    print("Two Wheel Move Complete")
+    #print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):
     motor_pair.run_for_degrees(degrees_to_move, speed, -speed, 100, 600, 1500)
@@ -250,7 +256,7 @@ def acquire_line(speed=20):
     wait_until(color_reflected)
     motor_pair.hold()
     hub.speaker.beep(90, 0.5)
-    print("Acquire line Complete")
+    #print("Acquire line Complete")
 
 def line_follower(move_degrees=1000, speed=20, gain=0.2):
     KO = gain
@@ -276,7 +282,7 @@ def line_follower(move_degrees=1000, speed=20, gain=0.2):
         motor_left.start_at_power(left_motor_input)
     motor_right.stop()
     motor_left.stop()
-    print("Line follower Complete")
+    #print("Line follower Complete")
 
 def delete_extra_presses():
     hub.left_button.was_pressed()
@@ -296,7 +302,7 @@ def vrooom():
     map_trips = {
         1: the_trip_with_the_crates,
         2: the_trip_with_the_chest,
-        3: the_one_with_the_crane,
+        3: the_trip_with_the_crane,
         4: the_ending_trip
         }
 

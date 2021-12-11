@@ -1,0 +1,36 @@
+# Find Rects Example
+#
+# This example shows off how to find rectangles in the image using the quad threshold
+# detection code from our April Tags code. The quad threshold detection algorithm
+# detects rectangles in an extremely robust way and is much better than Hough
+# Transform based methods. For example, it can still detect rectangles even when lens
+# distortion causes those rectangles to look bent. Rounded rectangles are no problem!
+# (But, given this the code will also detect small radius circles too)...
+
+import sensor, image, time
+SQUARES = 4
+sensor.reset()
+sensor.set_pixformat(sensor.GRAYSCALE) # grayscale is faster (160x120 max on OpenMV-M7)
+sensor.set_framesize(sensor.VGA)
+sensor.set_auto_whitebal(False)
+sensor.set_auto_exposure(False,300)
+sensor.skip_frames(time = 2000)
+clock = time.clock()
+Threshold = (69, 255)
+while(True):
+    clock.tick()
+    img = sensor.snapshot()
+
+    # `threshold` below should be set to a high enough value to filter out noise
+    # rectangles detected in the image which have low edge magnitudes. Rectangles
+    # have larger edge magnitudes the larger and more contrasty they are...
+    
+    blobs = img.find_blobs([Threshold])
+    num_of_blobs = len(blobs)
+    if num_of_blobs == SQUARES:
+        print("empty")
+    else:
+        print("not empty")
+    print(len(blobs))
+
+    print("FPS %f" % clock.fps())

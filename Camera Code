@@ -7,16 +7,18 @@
 # distortion causes those rectangles to look bent. Rounded rectangles are no problem!
 # (But, given this the code will also detect small radius circles too)...
 
-import sensor, image, time
+import sensor, image, time, pyb
 SQUARES = 4
 sensor.reset()
 sensor.set_pixformat(sensor.GRAYSCALE) # grayscale is faster (160x120 max on OpenMV-M7)
 sensor.set_framesize(sensor.VGA)
 sensor.set_auto_whitebal(False)
-sensor.set_auto_exposure(False,300)
+sensor.set_auto_exposure(False,237)
 sensor.skip_frames(time = 2000)
 clock = time.clock()
-Threshold = (69, 255)
+Threshold = (171, 255)
+indicator_green = pyb.Pin('P7', pyb.Pin.OUT_PP)
+indicator_red = pyb.Pin('P9', pyb.Pin.OUT_PP)
 while(True):
     clock.tick()
     img = sensor.snapshot()
@@ -29,8 +31,12 @@ while(True):
     num_of_blobs = len(blobs)
     if num_of_blobs == SQUARES:
         print("empty")
+        indicator_green.value(1)
+        indicator_red.value(0)
     else:
         print("not empty")
+        indicator_green.value(0)
+        indicator_red.value(1)
     print(len(blobs))
 
     print("FPS %f" % clock.fps())

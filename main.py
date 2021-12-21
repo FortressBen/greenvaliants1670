@@ -88,16 +88,23 @@ def the_trip_with_the_crates():
     rot_motion()
 
 def the_trip_with_the_chest():
+    motor_front_left.run_for_seconds(seconds=0.1,speed=10)
+    motor_front_left.set_degrees_counted(0)
+    motor_front_right.set_degrees_counted(0)
     grind(left_speed=-40, right_speed=-40, run_seconds=0.3)
-    acquire_line(speed=25)
-    line_follower(move_degrees=469, speed=18, gain=0.3)
-    motor_front_left.run_for_degrees(-360, speed=40)
-    line_follower(move_degrees=123, speed=18, gain=0.19)
-    motor_front_right.run_for_degrees(360, speed=MAX_SPEED)
+    motor_front_left.run_for_degrees(45, speed=40)
+    two_wheel_move(left_degrees=963, right_degrees=919, speed=40)
+    gyro_turn(input_angle=20, relative=True, left_or_right=TurnType.BOTH)
+    two_wheel_move(left_degrees=85, right_degrees=85, speed=40)
+    motor_front_left.run_for_degrees(120, speed=40)
+    motor_front_left.run_for_degrees(-140, speed=40)
+    two_wheel_move(left_degrees=60, right_degrees=60, speed=30)
+    motor_front_left.run_for_degrees(-80,speed=40)
+    two_wheel_move(left_degrees=130, right_degrees=150, speed=30)
     rot_motion()
 
 def the_trip_with_the_crane():
-    gyro_turn(45, relative=False)
+    gyro_turn(45, relative=True)
 
 def the_ending_trip():
     gyro_turn(125, relative=True, left_or_right=TurnType.LEFT)
@@ -158,7 +165,7 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
     #print("Found line")
 
 def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
-    STOP_AT_TARGET_TOLERANCE = 1
+    STOP_AT_TARGET_TOLERANCE = 3
     def map_gyro_angle(x):
         modulus_x = x % 360
         if modulus_x >= 0 and modulus_x <= 180:
@@ -181,6 +188,7 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
             abs_value_of_difference = abs(hub.motion_sensor.get_yaw_angle() - sanitized_target_angle)
             if abs_value_of_difference <= tolerance_degrees:
                 return True
+            print(hub.motion_sensor.get_yaw_angle())
         sign = compute_sign_for_move(desired_angle)
         if left_or_right == TurnType.BOTH:
             motor_pair.run_at_speed(sign*speed, sign*speed)

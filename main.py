@@ -81,11 +81,12 @@ def the_trip_with_the_crates():
     motor_front_left.run_for_degrees(300, speed=50)
     motor_front_right.run_for_degrees(-3500, speed=MAX_SPEED)
     grind(left_speed=-25,right_speed=-25, run_seconds=0.5)
+    hub.speaker.beep(100, 0.125)
     acquire_line(speed=-20)
+    hub.speaker.beep(100, 0.125)
     gyro_turn(input_angle=250, relative=False, left_or_right=TurnType.LEFT)
+    hub.speaker.beep(100, 0.125)
     two_wheel_move(left_degrees=884, right_degrees=836, speed=35)
-    gyro_turn(input_angle=-12, relative=True, left_or_right=TurnType.RIGHT)
-    rot_motion()
 
 def the_trip_with_the_chest():
     motor_front_left.run_for_seconds(seconds=0.1,speed=10)
@@ -99,15 +100,31 @@ def the_trip_with_the_chest():
     motor_front_left.run_for_degrees(120, speed=40)
     motor_front_left.run_for_degrees(-140, speed=40)
     two_wheel_move(left_degrees=60, right_degrees=60, speed=30)
+    motor_front_left.run_for_degrees(50, speed=40)
     motor_front_left.run_for_degrees(-80,speed=40)
     two_wheel_move(left_degrees=130, right_degrees=150, speed=30)
+    two_wheel_move(left_degrees=66, right_degrees=3, speed=30)
+    motor_front_right.run_for_degrees(-80, speed=40)
+    two_wheel_move(left_degrees=-250, right_degrees=-252, speed=30)
+    grind(left_speed=-MAX_SPEED, right_speed=-MAX_SPEED, run_seconds=2)
     rot_motion()
 
 def the_trip_with_the_crane():
-    gyro_turn(45, relative=True)
+    grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
+    two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
+    two_wheel_move(left_degrees=519, right_degrees=486, speed=30)
+    turn_until_line(left_or_right=TurnType.LEFT)
+    line_follower(move_degrees=590, speed=35, gain=0.19)
+    hub.speaker.beep(100, 0.125)
+    two_wheel_move(left_degrees=-145, right_degrees=145, speed=30)
+    two_wheel_move(left_degrees=275, right_degrees=271, speed=30)
+    motor_front_right.run_for_degrees(-100, speed=50)
+    two_wheel_move(left_degrees=0, right_degrees=-290, speed=30)
+    two_wheel_move(left_degrees=700, right_degrees=700, speed=20)
+    rot_motion()
 
 def the_ending_trip():
-    gyro_turn(125, relative=True, left_or_right=TurnType.LEFT)
+    two_wheel_move(left_degrees=1044, right_degrees=1103, speed=30)
 ###############################################################
 # Utility Functions
 def get_left_motor_degrees():
@@ -165,7 +182,7 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
     #print("Found line")
 
 def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
-    STOP_AT_TARGET_TOLERANCE = 3
+    STOP_AT_TARGET_TOLERANCE = 2
     def map_gyro_angle(x):
         modulus_x = x % 360
         if modulus_x >= 0 and modulus_x <= 180:
@@ -188,7 +205,6 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
             abs_value_of_difference = abs(hub.motion_sensor.get_yaw_angle() - sanitized_target_angle)
             if abs_value_of_difference <= tolerance_degrees:
                 return True
-            print(hub.motion_sensor.get_yaw_angle())
         sign = compute_sign_for_move(desired_angle)
         if left_or_right == TurnType.BOTH:
             motor_pair.run_at_speed(sign*speed, sign*speed)
@@ -207,7 +223,6 @@ def grind(left_speed=40, right_speed=20, run_seconds=3):
     def done_grinding():
         if grind_timer.now() >= run_seconds:
             return True
-        print(grind_timer.now())
         return False
     motor_right.start_at_power(right_speed)
     motor_left.start_at_power(-left_speed)
@@ -227,7 +242,6 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
             return True
     while not is_done():
         pass
-    print(get_left_motor_degrees(), get_right_motor_degrees())
     #print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):

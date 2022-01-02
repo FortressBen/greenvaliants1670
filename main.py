@@ -52,7 +52,7 @@ def test_gyro_turn():
 
     def run_turns(list_of_turns):
         for t in list_of_turns:
-            gyro_turn_2(input_angle = t[0], relative = t[1], timeout = TIMEOUT_SECS, left_or_right = TurnType.BOTH)
+            gyro_turn(input_angle = t[0], relative = t[1], timeout = TIMEOUT_SECS, left_or_right = TurnType.BOTH)
 
     run_turns([
         (120,True),
@@ -62,10 +62,10 @@ def test_gyro_turn():
         (49,True),
         (315,False),
         (-45,True),
-        (0,False)       
+        (0,False)
     ])
 
-    
+
 def tuning():
     grind(left_speed=-40, right_speed=-40, run_seconds=3)
 
@@ -79,8 +79,6 @@ def test_motors_up_down():
 def test_trip():
     grind(left_speed=-30, right_speed=-30, run_seconds=3)
     two_wheel_move(left_degrees=404, right_degrees=327, speed=20)
-    acquire_line(speed=20)
-    line_follower(move_degrees=200, speed=25)
     test_gyro_turn()
 
 def the_trip_with_the_crates():
@@ -180,7 +178,7 @@ def is_within_tolerance(expected, actual, tolerance):
 def check_battery():
     print(battery.info())
 ###############################################################
-#Move Functions 
+#Move Functions
 def make_mark():
     motor_front_left.set_degrees_counted(0)
     motor_front_left.run_for_degrees(80, speed=80)
@@ -242,7 +240,7 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
     def limited_power(max_power,y):
         sy = sign(y)
         if max_power >= abs(y):
-           return y
+            return y
         else:
             return max_power*sy
     def is_timed_out():
@@ -269,8 +267,8 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
     power = 0
     gain = 0.75
     while abs(error) > 1:
-        error = hub.motion_sensor.get_yaw_angle() - sanitized_target_angle 
-        raw_power =  gain*error + sign(error)*MIN_POWER_TO_MOVE
+        error = hub.motion_sensor.get_yaw_angle() - sanitized_target_angle
+        raw_power =gain*error + sign(error)*MIN_POWER_TO_MOVE
         power = limited_power(MAX_POWER, raw_power)
         if is_timed_out():
             print("TIMEOUT")
@@ -286,8 +284,8 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
     wait_for_ms(POST_MOVE_WAIT_MS)
     print("Gyro Turn Complete :: wanted =" ,input_angle,"relative =" ,relative,"calc =" ,desired_angle, "sanitized =" ,sanitized_target_angle, "ended_at =" ,hub.motion_sensor.get_yaw_angle())
     #if not work, try looking for 4 zeros in a row
-    #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle()    
-    
+    #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle()
+
 def grind(left_speed=40, right_speed=20, run_seconds=3):
     grind_timer = Timer()
     def done_grinding():

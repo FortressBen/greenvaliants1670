@@ -106,6 +106,7 @@ def the_trip_with_the_crates():
     gyro_turn(input_angle=250, relative=False, left_or_right=TurnType.LEFT)
     hub.speaker.beep(100, 0.125)
     two_wheel_move(left_degrees=884, right_degrees=836, speed=35)
+    gyro_turn(input_angle=-12, relative=True, left_or_right=TurnType.RIGHT)
 
 def the_trip_with_the_chest():
     motor_front_left.run_for_seconds(seconds=0.1,speed=10)

@@ -79,7 +79,7 @@ def test_motors_up_down():
 def test_trip():
     grind(left_speed=-30, right_speed=-30, run_seconds=3)
     two_wheel_move(left_degrees=404, right_degrees=327, speed=20)
-    test_gyro_turn()
+    gyro_turn(input_angle=130, relative=True, left_or_right=TurnType.LEFT)
 
 def the_trip_with_the_crates():
     grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
@@ -135,12 +135,19 @@ def the_trip_with_the_crane():
     turn_until_line(left_or_right=TurnType.LEFT)
     line_follower(move_degrees=590, speed=35, gain=0.19)
     hub.speaker.beep(100, 0.125)
-    two_wheel_move(left_degrees=-145, right_degrees=145, speed=30)
-    two_wheel_move(left_degrees=275, right_degrees=271, speed=30)
-    motor_front_right.run_for_degrees(-100, speed=50)
-    two_wheel_move(left_degrees=0, right_degrees=-290, speed=30)
-    two_wheel_move(left_degrees=700, right_degrees=700, speed=20)
-    rot_motion()
+    two_wheel_move(left_degrees=90, right_degrees=90, speed=20)
+    two_wheel_move(left_degrees=-145, right_degrees=145, speed=15)
+    grind(left_speed=30, right_speed=30, run_seconds=2)
+    motor_front_right.run_for_degrees(-100, speed=30)
+    grind(left_speed=-30, right_speed=-30, run_seconds = 1.5)
+    #two_wheel_move(left_degrees=0, right_degrees=-290, speed=15)
+    #two_wheel_move(left_degrees=750, right_degrees=750, speed=20)
+    # insert blue circle code right here
+    #
+    # insert blue circle code right here
+    #two_wheel_move(left_degrees=4, right_degrees=53, speed=10)
+    #two_wheel_move(left_degrees=213, right_degrees=218, speed=30)
+    #rot_motion()
 
 def the_ending_trip():
     two_wheel_move(left_degrees=1044, right_degrees=1103, speed=30)
@@ -444,4 +451,5 @@ def vrooom():
                 print("Ending Trip")
         last_color = current_color
 vrooom()
+#test_trip()
 raise SystemExit("END OF PROGRAM")

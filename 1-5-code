@@ -56,17 +56,21 @@ def test_gyro_turn():
 
     def run_turns(list_of_turns):
         for t in list_of_turns:
-            gyro_turn(input_angle = t[0], relative = t[1], timeout = TIMEOUT_SECS, left_or_right = TurnType.BOTH)
+            gyro_turn_2(input_angle = t[0], relative = t[1], timeout = 6, left_or_right = TurnType.BOTH, counter_or_clock = t[2])
 
     run_turns([
-        (120,True),
-        (90,False),
-        (-50,True),
-        (130,False),
-        (49,True),
-        (315,False),
-        (-45,True),
-        (0,False)
+        (120,True,TurnDirection.CLOCKWISE),
+        (90,False,TurnDirection.COUNTERCLOCKWISE),
+        (-50,True,TurnDirection.COUNTERCLOCKWISE),
+        (130,False, TurnDirection.CLOCKWISE),
+        (49,True, TurnDirection.COUNTERCLOCKWISE),
+        (315,False, TurnDirection.COUNTERCLOCKWISE),
+        (-45,True,TurnDirection.CLOCKWISE),
+        (0,False, TurnDirection.CLOCKWISE),
+        (180,True, TurnDirection.COUNTERCLOCKWISE),
+        (200,True, TurnDirection.COUNTERCLOCKWISE),
+        (165,False, TurnDirection.CLOCKWISE),
+        (200,False, TurnDirection.COUNTERCLOCKWISE)
     ])
 
 
@@ -81,8 +85,6 @@ def test_motors_up_down():
     motor_front_right.run_for_degrees(-4500, speed=MAX_SPEED)
 
 def test_trip():
-    grind(left_speed=-30, right_speed=-30, run_seconds=3)
-    two_wheel_move(left_degrees=404, right_degrees=327, speed=20)
     test_gyro_turn()
 
 def the_trip_with_the_crates():
@@ -211,7 +213,7 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
     hub.speaker.beep(90, 0.2)
     #print("Found line")
 
-def gyro_turn_old(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
+def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
     STOP_AT_TARGET_TOLERANCE = 1
     def map_gyro_angle(x):
         modulus_x = x % 360
@@ -245,7 +247,7 @@ def gyro_turn_old(input_angle = 90, relative = False, timeout = 6, left_or_right
     motor_pair.brake()
     #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
 
-def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH, counter_or_clock = TurnType.CLOCKWISE):
+def gyro_turn_2(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH, counter_or_clock = TurnDirection.CLOCKWISE):
     start_millis = time.ticks_ms()
     def limited_power(max_power,y):
         sy = sign(y)
@@ -272,17 +274,18 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
         desired_angle = input_angle
 
     sanitized_target_angle = map_gyro_angle(desired_angle)
-    MAX_POWER = 40
+    MAX_POWER = 30
     error = 69420
     power = 0
-    gain = 0.75
-    while abs(error) > 1:
+    gain = 0.8
+    while abs(error) > STOP_AT_TARGET_TOLERANCE:
         error = hub.motion_sensor.get_yaw_angle() - sanitized_target_angle
-        if counter_or_clock == TurnDirection.CLOCKWISE
-            raw_power = gain * + sign(error)*MIN_POWER_TO_MOVE
-        if counter_or_clock == TurnDirection.COUNTERCLOCKWISE
-            raw_power = gain * + error*MIN_POWER_TO_MOVE
+        if counter_or_clock == TurnDirection.CLOCKWISE:
+            raw_power = gain * error + sign(error)*MIN_POWER_TO_MOVE
+        if counter_or_clock == TurnDirection.COUNTERCLOCKWISE:
+            raw_power = gain * error + sign(error)*MIN_POWER_TO_MOVE
         power = limited_power(MAX_POWER, raw_power)
+        #print(error, raw_power,gain*error,power)
         if is_timed_out():
             print("TIMEOUT")
             break
@@ -298,8 +301,8 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
     print("Gyro Turn Complete :: wanted =" ,input_angle,"relative =" ,relative,"calc =" ,desired_angle, "sanitized =" ,sanitized_target_angle, "ended_at =" ,hub.motion_sensor.get_yaw_angle())
     #if not work, try looking for 4 zeros in a row
     #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle()
-    
-   
+
+
 def grind(left_speed=40, right_speed=20, run_seconds=3):
     grind_timer = Timer()
     def done_grinding():

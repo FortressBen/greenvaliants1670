@@ -242,7 +242,7 @@ def gyro_turn_old(input_angle = 90, relative = False, timeout = 6, left_or_right
     motor_pair.brake()
     #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
 
-def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
+def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH, counter_or_clock = TurnDirection.CLOCKWISE):
     start_millis = time.ticks_ms()
     def limited_power(max_power,y):
         sy = sign(y)
@@ -269,14 +269,18 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
         desired_angle = input_angle
 
     sanitized_target_angle = map_gyro_angle(desired_angle)
-    MAX_POWER = 35
+    MAX_POWER = 30
     error = 69420
     power = 0
-    gain = 0.75
-    while abs(error) > 1:
+    gain = 0.8
+    while abs(error) > STOP_AT_TARGET_TOLERANCE:
         error = hub.motion_sensor.get_yaw_angle() - sanitized_target_angle
-        raw_power =gain*error + sign(error)*MIN_POWER_TO_MOVE
+        if counter_or_clock == TurnDirection.CLOCKWISE:
+            raw_power = gain * error + sign(error)*MIN_POWER_TO_MOVE
+        if counter_or_clock == TurnDirection.COUNTERCLOCKWISE:
+            raw_power = gain * error + sign(error)*MIN_POWER_TO_MOVE
         power = limited_power(MAX_POWER, raw_power)
+        #print(error, raw_power,gain*error,power)
         if is_timed_out():
             print("TIMEOUT")
             break

@@ -22,7 +22,7 @@ _select_trip = 0
 MAX_SPEED = 75
 ##############################################################
 # Tunable Constants
-GYRO_TURN_FAST_SPEED = 30
+GYRO_TURN_FAST_SPEED = 20
 GYRO_TURN_SLOW_SPEED = 7
 BLACK_MIDDLE = 30
 BLACK_EDGE = 45
@@ -47,6 +47,11 @@ class TurnType:
     LEFT = 1
     RIGHT = 2
 
+class TurnDirection:
+    CLOCKWISE = -1
+    COUNTERCLOCKWISE = 1
+
+
 def test_gyro_turn():
     TIMEOUT_SECS=6
 
@@ -67,7 +72,7 @@ def test_gyro_turn():
 
 
 def tuning():
-    grind(left_speed=-40, right_speed=-40, run_seconds=3)
+    grind(left_speed=-40, right_speed=-40, timeout=6, run_seconds=3)
 
 def test_motors_up_down():
     motor_front_left.set_degrees_counted(0)
@@ -77,9 +82,7 @@ def test_motors_up_down():
     motor_front_right.run_for_degrees(-4500, speed=MAX_SPEED)
 
 def test_trip():
-    grind(left_speed=-30, right_speed=-30, run_seconds=3)
-    two_wheel_move(left_degrees=404, right_degrees=327, speed=20)
-    gyro_turn(input_angle=130, relative=True, left_or_right=TurnType.LEFT)
+    grind(left_speed=-30, right_speed=-30, run_seconds=23)
 
 def the_trip_with_the_crates():
     grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
@@ -91,9 +94,9 @@ def the_trip_with_the_crates():
     line_follower(move_degrees=180, speed=20, gain=0.25)
     hub.speaker.beep(100, 0.125)
     line_follower(move_degrees=429, speed=35, gain=0.19)
-    gyro_turn(input_angle=130, relative=True, left_or_right=TurnType.LEFT)
+    gyro_turn_2(input_angle=190, relative=False, left_or_right=TurnType.LEFT, counter_or_clock=TurnDirection.CLOCKWISE)
     grind(left_speed=-40, right_speed=-40, run_seconds=3)
-    two_wheel_move(left_degrees=790, right_degrees=790, speed=30)
+    two_wheel_move(left_degrees=790, right_degrees=791, speed=30)
     grind(left_speed=20,right_speed=20,run_seconds=0.25)
     motor_front_right.run_for_degrees(3500, speed=MAX_SPEED)
     motor_front_left.run_for_degrees(-300, speed=MAX_SPEED)
@@ -106,6 +109,9 @@ def the_trip_with_the_crates():
     gyro_turn(input_angle=250, relative=False, left_or_right=TurnType.LEFT)
     hub.speaker.beep(100, 0.125)
     two_wheel_move(left_degrees=884, right_degrees=836, speed=35)
+    two_wheel_move(left_degrees=329, right_degrees=434, speed=30)
+    two_wheel_move(left_degrees=1600, right_degrees=1360, speed=55)
+    rot_motion()
 
 def the_trip_with_the_chest():
     motor_front_left.run_for_seconds(seconds=0.1,speed=10)
@@ -124,8 +130,8 @@ def the_trip_with_the_chest():
     two_wheel_move(left_degrees=130, right_degrees=150, speed=30)
     two_wheel_move(left_degrees=66, right_degrees=3, speed=30)
     motor_front_right.run_for_degrees(-80, speed=40)
-    two_wheel_move(left_degrees=-250, right_degrees=-252, speed=30)
-    grind(left_speed=-MAX_SPEED, right_speed=-MAX_SPEED, run_seconds=2)
+    two_wheel_move(left_degrees=-220, right_degrees=-242, speed=30)
+    grind(left_speed=-50, right_speed=-50, run_seconds=3)
     rot_motion()
 
 def the_trip_with_the_crane():
@@ -208,7 +214,7 @@ def turn_until_line(left_or_right=TurnType.LEFT, speed=10):
     hub.speaker.beep(90, 0.2)
     #print("Found line")
 
-def gyro_turn_old(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
+def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH):
     STOP_AT_TARGET_TOLERANCE = 1
     def map_gyro_angle(x):
         modulus_x = x % 360
@@ -242,7 +248,7 @@ def gyro_turn_old(input_angle = 90, relative = False, timeout = 6, left_or_right
     motor_pair.brake()
     #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle())
 
-def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH, counter_or_clock = TurnDirection.CLOCKWISE):
+def gyro_turn_2(input_angle = 90, relative = False, timeout = 6, left_or_right = TurnType.BOTH, counter_or_clock = TurnDirection.CLOCKWISE):
     start_millis = time.ticks_ms()
     def limited_power(max_power,y):
         sy = sign(y)
@@ -270,7 +276,7 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
 
     sanitized_target_angle = map_gyro_angle(desired_angle)
     MAX_POWER = 30
-    error = 69420
+    error = 1000000
     power = 0
     gain = 0.8
     while abs(error) > STOP_AT_TARGET_TOLERANCE:
@@ -297,15 +303,26 @@ def gyro_turn(input_angle = 90, relative = False, timeout = 6, left_or_right = T
     #if not work, try looking for 4 zeros in a row
     #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle()
 
-def grind(left_speed=40, right_speed=20, run_seconds=3):
+def grind(left_speed=40, right_speed=20, timeout=6, run_seconds=3):
+    start_millis = time.ticks_ms()
+    def is_timed_out():
+        when_time_out = start_millis + timeout*1000
+        if time.ticks_ms() > when_time_out:
+            return True
+        else:
+            return False
     grind_timer = Timer()
     def done_grinding():
         if grind_timer.now() >= run_seconds:
             return True
-        return False
-    motor_right.start_at_power(right_speed)
-    motor_left.start_at_power(-left_speed)
-    wait_until(done_grinding)
+        else:
+            return False
+    while done_grinding() == False:
+        motor_right.start_at_power(right_speed)
+        motor_left.start_at_power(-left_speed)
+        if is_timed_out():
+            print("TIMEOUT")
+            break
     motor_right.stop()
     motor_left.stop()
     #print("Grind Complete")

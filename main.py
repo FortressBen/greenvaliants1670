@@ -27,7 +27,7 @@ GYRO_TURN_SLOW_SPEED = 7
 BLACK_MIDDLE = 30
 BLACK_EDGE = 45
 SLOW_DOWN_ANGLE_BUFFER = 30
-MIN_POWER_TO_MOVE = 11
+MIN_POWER_TO_MOVE = 20
 POST_MOVE_WAIT_MS = 500
 ##############################################################
 ##############################################################
@@ -93,10 +93,10 @@ def the_trip_with_the_crates():
     hub.speaker.beep(100, 0.125)
     line_follower(move_degrees=180, speed=20, gain=0.25)
     hub.speaker.beep(100, 0.125)
-    line_follower(move_degrees=429, speed=35, gain=0.19)
-    gyro_turn_2(input_angle=190, relative=False, left_or_right=TurnType.LEFT, counter_or_clock=TurnDirection.CLOCKWISE)
+    line_follower(move_degrees=410, speed=35, gain=0.19)
+    motor_left.run_for_degrees(-435,30)
     grind(left_speed=-40, right_speed=-40, run_seconds=3)
-    two_wheel_move(left_degrees=790, right_degrees=791, speed=30)
+    two_wheel_move(left_degrees=790, right_degrees=790, speed=30)
     grind(left_speed=20,right_speed=20,run_seconds=0.25)
     motor_front_right.run_for_degrees(3500, speed=MAX_SPEED)
     motor_front_left.run_for_degrees(-300, speed=MAX_SPEED)
@@ -106,11 +106,12 @@ def the_trip_with_the_crates():
     hub.speaker.beep(100, 0.125)
     acquire_line(speed=-20)
     hub.speaker.beep(100, 0.125)
-    gyro_turn(input_angle=250, relative=False, left_or_right=TurnType.LEFT)
+    motor_left.run_for_degrees(-50,20)
+    gyro_turn_2(input_angle=247, relative=False, timeout=3, left_or_right=TurnType.BOTH, counter_or_clock=TurnDirection.COUNTERCLOCKWISE)
     hub.speaker.beep(100, 0.125)
     two_wheel_move(left_degrees=884, right_degrees=836, speed=35)
-    two_wheel_move(left_degrees=329, right_degrees=434, speed=30)
-    two_wheel_move(left_degrees=1600, right_degrees=1360, speed=55)
+    two_wheel_move(left_degrees=452, right_degrees=519, speed=35)
+    two_wheel_move(left_degrees=1434, right_degrees=1180, speed=45)
     rot_motion()
 
 def the_trip_with_the_chest():

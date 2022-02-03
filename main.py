@@ -13,11 +13,11 @@ color = ColorSensor('F')
 left_motor = rawhub.port.A.motor
 right_motor = rawhub.port.B.motor
 motor_pair = left_motor.pair(right_motor)
-hub.motion_sensor.reset_yaw_angle()
 STOP_HOLD = left_motor.STOP_HOLD
 STOP_BRAKE = left_motor.STOP_BRAKE
 STOP_FLOAT = left_motor.STOP_FLOAT
 motor_front_left.set_stop_action('brake')
+hub.motion_sensor.reset_yaw_angle()
 _select_trip = 0
 MAX_SPEED = 75
 ##############################################################
@@ -27,7 +27,7 @@ GYRO_TURN_SLOW_SPEED = 7
 BLACK_MIDDLE = 30
 BLACK_EDGE = 45
 SLOW_DOWN_ANGLE_BUFFER = 30
-MIN_POWER_TO_MOVE = 20
+MIN_POWER_TO_MOVE = 11
 POST_MOVE_WAIT_MS = 500
 ##############################################################
 ##############################################################
@@ -53,21 +53,41 @@ class TurnDirection:
 
 
 def test_gyro_turn():
-    TIMEOUT_SECS=6
-
+    hub.motion_sensor.reset_yaw_angle()
+    TIMEOUT_SECS=4
     def run_turns(list_of_turns):
-        for t in list_of_turns:
-            gyro_turn(input_angle = t[0], relative = t[1], timeout = TIMEOUT_SECS, left_or_right = TurnType.BOTH)
+        for tt in list_of_turns:
+            gyro_turn_2(input_angle = tt[0], relative = tt[1], timeout = TIMEOUT_SECS, left_or_right = TurnType.BOTH, counter_or_clock= tt[2])
+            wait_for_seconds(2)
+            
 
     run_turns([
-        (120,True),
-        (90,False),
-        (-50,True),
-        (130,False),
-        (49,True),
-        (315,False),
-        (-45,True),
-        (0,False)
+        (45,False,TurnDirection.CLOCKWISE),
+        (179,False,TurnDirection.CLOCKWISE),
+        (246,False,TurnDirection.CLOCKWISE),
+        (-45,False,TurnDirection.CLOCKWISE),
+        (45,False,TurnDirection.CLOCKWISE),
+        (246,False,TurnDirection.CLOCKWISE),
+        (45,False,TurnDirection.CLOCKWISE),
+        (-45,False,TurnDirection.CLOCKWISE),
+        (179,False,TurnDirection.CLOCKWISE),
+        (-45,False,TurnDirection.CLOCKWISE),
+        (246,False,TurnDirection.CLOCKWISE),
+        (179,False,TurnDirection.CLOCKWISE),
+        (45,False,TurnDirection.CLOCKWISE),
+        (45,False,TurnDirection.COUNTERCLOCKWISE),
+        (179,False,TurnDirection.COUNTERCLOCKWISE),
+        (246,False,TurnDirection.COUNTERCLOCKWISE),
+        (-45,False,TurnDirection.COUNTERCLOCKWISE),
+        (45,False,TurnDirection.COUNTERCLOCKWISE),
+        (246,False,TurnDirection.COUNTERCLOCKWISE),
+        (45,False,TurnDirection.COUNTERCLOCKWISE),
+        (-45,False,TurnDirection.COUNTERCLOCKWISE),
+        (179,False,TurnDirection.COUNTERCLOCKWISE),
+        (-45,False,TurnDirection.COUNTERCLOCKWISE),
+        (246,False,TurnDirection.COUNTERCLOCKWISE),
+        (179,False,TurnDirection.COUNTERCLOCKWISE),
+        (45,False,TurnDirection.COUNTERCLOCKWISE)
     ])
 
 
@@ -98,11 +118,10 @@ def the_trip_with_the_crates():
     motor_right.set_degrees_counted(0)
     motor_left.run_for_degrees(-429,30)
     two_wheel_move(left_degrees=-480, right_degrees=-480, speed=30)
-    grind(left_speed=-40, right_speed=-40, run_seconds=2)
-    two_wheel_move(left_degrees=395, right_degrees=395, speed=30)
-    wait_for_ms(1000)
-    two_wheel_move(left_degrees=395, right_degrees=395, speed=30)
-    grind(left_speed=20,right_speed=20,run_seconds=0.75)
+    grind(left_speed=-40, right_speed=-40, run_seconds=0.5)
+    print(motor_left.get_degrees_counted(), motor_right.get_degrees_counted())
+    two_wheel_move(left_degrees=790, right_degrees=790, speed=30)
+    grind(left_speed=20,right_speed=20,run_seconds=0.25)
     motor_front_right.run_for_degrees(3000, speed=MAX_SPEED)
     motor_front_left.run_for_seconds(1,-MAX_SPEED)
     motor_front_left.run_for_seconds(1,MAX_SPEED)
@@ -134,7 +153,7 @@ def the_trip_with_the_chest():
     motor_front_left.run_for_degrees(-80,speed=40)
     two_wheel_move(left_degrees=130, right_degrees=150, speed=30)
     two_wheel_move(left_degrees=66, right_degrees=3, speed=30)
-    motor_front_right.run_for_degrees(-80, speed=20)
+    motor_front_right.run_for_degrees(-80, speed=40)
     two_wheel_move(left_degrees=-220, right_degrees=-242, speed=30)
     grind(left_speed=-50, right_speed=-50, run_seconds=3)
     motor_front_right.run_for_degrees(-200, speed=40)
@@ -287,11 +306,10 @@ def gyro_turn_2(input_angle = 90, relative = False, timeout = 6, left_or_right =
     gain = 0.8
     while abs(error) > STOP_AT_TARGET_TOLERANCE:
         error = hub.motion_sensor.get_yaw_angle() - sanitized_target_angle
-        if counter_or_clock == TurnDirection.CLOCKWISE:
-            raw_power = gain * error + sign(error)*MIN_POWER_TO_MOVE
-        if counter_or_clock == TurnDirection.COUNTERCLOCKWISE:
-            raw_power = gain * error + sign(error)*MIN_POWER_TO_MOVE
+        raw_power = abs(gain * error) + MIN_POWER_TO_MOVE
         power = limited_power(MAX_POWER, raw_power)
+        if counter_or_clock == TurnDirection.CLOCKWISE:
+            power = -power
         #print(error, raw_power,gain*error,power)
         if is_timed_out():
             print("TIMEOUT")
@@ -345,7 +363,6 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     while not is_done():
         pass
     print(get_left_motor_degrees(), get_right_motor_degrees())
-    wait_for_ms(1000)
     #print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):
@@ -450,7 +467,6 @@ def vrooom():
         hub.light_matrix.show_image(display_map[_select_trip])
 
     def run_selected_trip():
-        hub.motion_sensor.reset_yaw_angle()
         map_trips[_select_trip]()
     select_trip(1)
     current_color = None
@@ -480,5 +496,5 @@ def vrooom():
                 print("Ending Trip")
         last_color = current_color
 vrooom()
-#test_trip()
+#test_gyro_turn()
 raise SystemExit("END OF PROGRAM")

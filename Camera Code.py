@@ -22,7 +22,7 @@ while(True):
     list_o_blobs = 0
     for blob in blobs:
         print(blob.pixels())
-        if blob.pixels() <= 200 and blob.pixels() >= 90:
+        if blob.pixels() <= 200 and blob.pixels() >= 80:
             aspect_ratio = blob.h() / blob.w()
             if aspect_ratio > 0.75 and aspect_ratio < 1.25:
                 img.draw_rectangle(blob.rect(), color=(255,255,255), thickness=2)

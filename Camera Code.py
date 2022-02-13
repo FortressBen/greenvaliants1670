@@ -1,12 +1,3 @@
-# Find Rects Example
-#
-# This example shows off how to find rectangles in the image using the quad threshold
-# detection code from our April Tags code. The quad threshold detection algorithm
-# detects rectangles in an extremely robust way and is much better than Hough
-# Transform based methods. For example, it can still detect rectangles even when lens
-# distortion causes those rectangles to look bent. Rounded rectangles are no problem!
-# (But, given this the code will also detect small radius circles too)...
-
 import sensor, image, time, pyb
 SQUARES = 4
 sensor.reset()
@@ -31,9 +22,13 @@ while(True):
     list_o_blobs = 0
     for blob in blobs:
         print(blob.pixels())
-        if blob.pixels() <= 80 and blob.pixels() >= 50:
-            
-            list_o_blobs += 1
+        if blob.pixels() <= 200 and blob.pixels() >= 90:
+            aspect_ratio = blob.h() / blob.w()
+            if aspect_ratio > 0.75 and aspect_ratio < 1.25:
+                img.draw_rectangle(blob.rect(), color=(255,255,255), thickness=2)
+                list_o_blobs += 1
+            else:
+                print(aspect_ratio)
             
     if list_o_blobs == SQUARES:
          print("empty")

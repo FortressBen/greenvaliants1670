@@ -19,7 +19,7 @@ STOP_FLOAT = left_motor.STOP_FLOAT
 motor_front_left.set_stop_action('brake')
 hub.motion_sensor.reset_yaw_angle()
 _select_trip = 0
-MAX_SPEED = 75
+MAX_SPEED = 80
 ##############################################################
 # Tunable Constants
 GYRO_TURN_FAST_SPEED = 20
@@ -59,7 +59,7 @@ def test_gyro_turn():
         for tt in list_of_turns:
             gyro_turn_2(input_angle = tt[0], relative = tt[1], timeout = TIMEOUT_SECS, left_or_right = TurnType.BOTH, counter_or_clock= tt[2])
             wait_for_seconds(2)
-            
+
 
     run_turns([
         (45,False,TurnDirection.CLOCKWISE),
@@ -109,6 +109,7 @@ def the_trip_with_the_crates():
     two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
     turn_until_line(left_or_right=TurnType.LEFT)
+    motor_left.run_for_degrees(-12,30)
     line_follower(move_degrees=660, speed=35, gain=0.19)
     hub.speaker.beep(100, 0.125)
     line_follower(move_degrees=180, speed=20, gain=0.25)
@@ -116,25 +117,28 @@ def the_trip_with_the_crates():
     line_follower(move_degrees=390, speed=35, gain=0.19)
     motor_left.set_degrees_counted(0)
     motor_right.set_degrees_counted(0)
-    motor_left.run_for_degrees(-429,30)
+    motor_left.run_for_degrees(-432,30) #original -429
     two_wheel_move(left_degrees=-480, right_degrees=-480, speed=30)
     grind(left_speed=-40, right_speed=-40, run_seconds=0.5)
-    print(motor_left.get_degrees_counted(), motor_right.get_degrees_counted())
-    two_wheel_move(left_degrees=790, right_degrees=790, speed=30)
-    grind(left_speed=20,right_speed=20,run_seconds=0.25)
-    motor_front_right.run_for_degrees(3000, speed=MAX_SPEED)
+    two_wheel_move(left_degrees=395, right_degrees=395, speed=30)
+    wait_for_ms(150)
+    two_wheel_move(left_degrees=395, right_degrees=395, speed=30)
+    grind(left_speed=20,right_speed=20,run_seconds=0.75)
+    motor_front_right.run_for_degrees(3300, speed=MAX_SPEED)
     motor_front_left.run_for_seconds(1,-MAX_SPEED)
     motor_front_left.run_for_seconds(1,MAX_SPEED)
-    motor_front_right.run_for_degrees(-3000, speed=MAX_SPEED)
+    motor_front_right.run_for_degrees(-3300, speed=MAX_SPEED)
     grind(left_speed=-25,right_speed=-25, run_seconds=0.5)
     hub.speaker.beep(100, 0.125)
     acquire_line(speed=-20)
     hub.speaker.beep(100, 0.125)
     motor_left.run_for_degrees(-50,20)
-    gyro_turn_2(input_angle=246, relative=False, timeout=3, left_or_right=TurnType.BOTH, counter_or_clock=TurnDirection.COUNTERCLOCKWISE)
+    gyro_turn_2(input_angle=252, relative=False, timeout=2, left_or_right=TurnType.BOTH, counter_or_clock=TurnDirection.CLOCKWISE)
     hub.speaker.beep(100, 0.125)
+    motor_front_left.run_for_seconds(1,-MAX_SPEED)
     two_wheel_move(left_degrees=884, right_degrees=836, speed=35)
     two_wheel_move(left_degrees=452, right_degrees=519, speed=35)
+    motor_front_left.run_for_seconds(1,MAX_SPEED)
     two_wheel_move(left_degrees=1534, right_degrees=1280, speed=45)
 
 def the_trip_with_the_chest():
@@ -165,20 +169,20 @@ def the_trip_with_the_crane():
     turn_until_line(left_or_right=TurnType.LEFT)
     line_follower(move_degrees=590, speed=35, gain=0.19)
     hub.speaker.beep(100, 0.125)
-    two_wheel_move(left_degrees=35, right_degrees=55, speed=35)
-    two_wheel_move(left_degrees=-145, right_degrees=145, speed=15)
-    two_wheel_move(left_degrees=110, right_degrees=110, speed=30)
-    grind(left_speed=30, right_speed=30, run_seconds=1.5)
-    motor_front_right.run_for_degrees(-100, speed=30)
-    grind(left_speed=-30, right_speed=-30, run_seconds = 1.5)
-    #two_wheel_move(left_degrees=0, right_degrees=-290, speed=15)
-    #two_wheel_move(left_degrees=750, right_degrees=750, speed=20)
-    # insert blue circle code right here
-    #
-    # insert blue circle code right here
-    #two_wheel_move(left_degrees=4, right_degrees=53, speed=10)
-    #two_wheel_move(left_degrees=213, right_degrees=218, speed=30)
-    #rot_motion()
+    two_wheel_move(left_degrees=25, right_degrees=42, speed=15)
+    two_wheel_move(left_degrees=-145, right_degrees=145, speed=MIN_POWER_TO_MOVE)
+    two_wheel_move(left_degrees=254, right_degrees=246, speed=18)
+    grind(left_speed=25, right_speed=25, run_seconds=0.125)
+    hub.speaker.beep(101, 0.25)
+    grind(left_speed=25, right_speed=-MIN_POWER_TO_MOVE, run_seconds=0.125)
+    motor_front_right.run_for_degrees(-100, MAX_SPEED)
+    two_wheel_move(left_degrees=-300, right_degrees=-300, speed=20)
+    two_wheel_move(left_degrees=180, right_degrees=-36, speed=30)
+    two_wheel_move(left_degrees=625, right_degrees=642, speed=30)
+    two_wheel_move(left_degrees=225, right_degrees=157, speed=30)
+    grind(left_speed=20, right_speed=20, run_seconds=0.75)
+    two_wheel_move(left_degrees=-241, right_degrees=-13, speed=30)
+    grind(left_speed=20, right_speed=20, run_seconds=0.8)
 
 def the_ending_trip():
     two_wheel_move(left_degrees=1044, right_degrees=1103, speed=30)
@@ -366,7 +370,7 @@ def two_wheel_move(left_degrees=100, right_degrees=100, speed=30):
     #print("Two Wheel Move Complete")
 
 def straight(degrees_to_move=500, speed=35):
-    motor_pair.run_for_degrees(degrees_to_move, speed, -speed, 100, 600, 1500)
+    two_wheel_move(left_degrees=degrees_to_move, right_degrees=degrees_to_move, speed=speed)
 
 def rot_motion(print_seconds=3):
     motor_pair.float()

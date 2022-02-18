@@ -25,7 +25,7 @@ MAX_SPEED = 80
 GYRO_TURN_FAST_SPEED = 20
 GYRO_TURN_SLOW_SPEED = 7
 BLACK_MIDDLE = 30
-BLACK_EDGE = 45
+BLACK_EDGE = 55
 SLOW_DOWN_ANGLE_BUFFER = 30
 MIN_POWER_TO_MOVE = 11
 POST_MOVE_WAIT_MS = 500
@@ -108,8 +108,13 @@ def the_trip_with_the_crates():
     grind(left_speed=-20,right_speed=-20, run_seconds=0.5)
     two_wheel_move(left_degrees=624, right_degrees=475, speed=30)
     two_wheel_move(left_degrees=519, right_degrees=471, speed=30)
+    motor_left.set_degrees_counted(0)
+    motor_right.set_degrees_counted(0)
     turn_until_line(left_or_right=TurnType.LEFT)
-    motor_left.run_for_degrees(-12,30)
+    print("aquire_line",motor_left.get_degrees_counted())
+    print("aquire_line",motor_right.get_degrees_counted())
+    wait_for_ms(100)
+    motor_left.run_for_degrees(-40,30)
     line_follower(move_degrees=660, speed=35, gain=0.19)
     hub.speaker.beep(100, 0.125)
     line_follower(move_degrees=180, speed=20, gain=0.25)
@@ -158,7 +163,7 @@ def the_trip_with_the_chest():
     motor_front_left.run_for_degrees(-80,speed=40)
     two_wheel_move(left_degrees=130, right_degrees=150, speed=30)
     two_wheel_move(left_degrees=66, right_degrees=3, speed=30)
-    motor_front_right.run_for_degrees(-80, speed=40)
+    motor_front_right.run_for_degrees(-80, speed=30)
     two_wheel_move(left_degrees=-220, right_degrees=-242, speed=30)
     grind(left_speed=-50, right_speed=-50, run_seconds=3)
     motor_front_right.run_for_degrees(-200, speed=40)
@@ -335,7 +340,7 @@ def gyro_turn_2(input_angle = 90, relative = False, timeout = 6, left_or_right =
     motor_left.stop()
     motor_right.stop()
     wait_for_ms(POST_MOVE_WAIT_MS)
-    print("Gyro Turn Complete :: wanted =" ,input_angle,"relative =" ,relative,"calc =" ,desired_angle, "sanitized =" ,sanitized_target_angle, "ended_at =" ,hub.motion_sensor.get_yaw_angle())
+    #print("Gyro Turn Complete :: wanted =" ,input_angle,"relative =" ,relative,"calc =" ,desired_angle, "sanitized =" ,sanitized_target_angle, "ended_at =" ,hub.motion_sensor.get_yaw_angle())
     #if not work, try looking for 4 zeros in a row
     #print("Gyro Turn Complete", hub.motion_sensor.get_yaw_angle()
 
